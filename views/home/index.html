@@ -1,0 +1,40 @@
+{% extends "../base.html" %}
+{% block content %}
+  <h2>online nodes ({{ nodes|length }})</h2>
+
+  <table width="900px">
+    <tbody>
+      <tr>
+	<td>Node</td>
+	<td>Script</td>
+	<td>% CPU</td>
+	<td>MEM (kilobytes)</td>
+	<td>Status</td>
+      </tr>
+      {% for status,info in nodes %}
+        <tr>      
+	  {% ifequal status "true" %}
+	    {% for iterator in info %}
+               <td>{{ iterator.node }}</td>
+	       <td>{{ iterator.script }}</td>
+	       <td>{{ iterator.cpu }}</td>
+	       <td>{{ iterator.mem }}</td>
+	       <td><a href="/home/node/{{ iterator.node }}/stop" style="color: green;" title="Stop">running</a></td>
+	    {% endfor %}
+	  {% else %} 
+            {% for iterator in info %}
+               <td>{{ iterator.node }}</td>
+	       <td>-</td>
+	       <td>-</td>
+	       <td>-</td>
+	       <td><a href="/home/node/{{ iterator.node }}/start" style="color: red;" title="Start">stopped</a></td>
+            {% endfor %}
+          {% endifequal %}   
+	</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <br/>
+  <a href="/">Refresh</a>
+
+{% endblock %}

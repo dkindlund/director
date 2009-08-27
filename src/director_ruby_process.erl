@@ -21,9 +21,11 @@ start(Config) ->
 		       %% Delay to let the process start and write the pidfile
 		       timer:sleep(10000),
 		       
-		       error_logger:info_msg("Using Pidfile: ~s~n",[PidFile]),
+		       %%error_logger:info_msg("Using Pidfile: ~s~n",[PidFile]),
+		       
 		       Pid = get_app_pid(PidFile),
-		       error_logger:info_msg("Looping with Pid ~p~n",[Pid]),
+		       Msg = "Starting Ruby process with PID: " ++ Pid,
+		       director_node_events:event(Msg),
 		       loop(Port,Pid,Script)
 	       end).
 
@@ -43,10 +45,10 @@ loop(Port,Pid,Script) ->
 	    From ! Data,
 	    loop(Port,Pid,Script);
 	stop ->
-	    error_logger:info_msg("Closing the port application~n"),
+	    director_node_events:event("Stopping the Ruby process"),
 	    kill_pid(Pid,false);
-	{'EXIT',_,Reason} ->
-	    error_logger:info_msg("Exited..~p~n",[Reason]),
+	{'EXIT',_,_Reason} ->
+	    %%error_logger:info_msg("Exited..~p~n",[Reason]),
 	    exit(eDied)
     end.
 

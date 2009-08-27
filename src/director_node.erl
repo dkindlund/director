@@ -19,7 +19,7 @@
 %% config       : configuration information
 %% queue_pid    : Pid of the queue reader
 %% running      : are the workers running?
--record(state, {allow_exit,config,running}).
+-record(state, {allow_exit,config,running,service_mod=undefined}).
 
 %%====================================================================
 %% API
@@ -69,7 +69,8 @@ handle_call(status,_From,State) ->
     Node = atom_to_list(node()),
     Reply = case State#state.running of
 		true ->
-		    Info = director_ruby_process:status(),
+		    Mod = State#state.service_mod,
+		    Info = Mod:status(),
 		    {"true",[[{node,Node}|Info]]};
 		false ->
 		    {"false",[[{node,Node}]]}
@@ -106,15 +107,32 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%--------------------------------------------------------------------
 
+get_service_type(State) ->
+    ServiceType = proplists:get_value(type,State#state.config),
+    case ServiceType of
+	"perl" ->
+	    error_logger:info_msg("Starting Perl process~n"),
+	    director_perl_process;
+	_ ->
+	    error_logger:info_msg("Starting Perl process~n"),
+	    director_ruby_process
+    end.
+
 start_services(State) ->
-    director_ruby_process:start(State#state.config),
-    State#state{allow_exit=false,running=true}.
+    Mod = get_service_type(State),
+    Mod:start(State#state.config),
+
+    %%director_ruby_process:start(State#state.config),
+    State#state{allow_exit=false,running=true,service_mod=Mod}.
 
 stop_services(State) ->
     State1 = State#state{allow_exit=true,running=false},
     %% Stop the worker
-    director_ruby_process:stop(),
-    State1.
+    Mod = State1#state.service_mod,
+    Mod:stop(),
+    State2 = State1#state{service_mod=undefined},
+    %%director_ruby_process:stop(),
+    State2.
     
     
 

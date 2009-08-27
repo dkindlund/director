@@ -39,14 +39,18 @@ init([]) ->
     {ok,[[PidFile]]} = init:get_argument(pidfile),
     {ok,[[CmdName]]} = init:get_argument(cmdname),
     {ok,[[ConsoleNode]]} = init:get_argument(phonehome),
-    Config = [{appdir,AppDir},{pidfile,PidFile},{cmd,CmdName}],
+    {ok,[[Type]]} = init:get_argument(type),
+    Config = [{appdir,AppDir},{pidfile,PidFile},{cmd,CmdName},{type,Type}],
 
     error_logger:info_msg("Configuration: ~p~n",[Config]),
 
     ping_console(list_to_atom(ConsoleNode),?PHONEHOME_TRIES),
         
-    AChild = {director_node,{director_node,start,[Config]},permanent,2000,worker,[director_node]},
-    {ok,{{one_for_all,3,600}, [AChild]}}.
+    EventServer = {director_node_events,{director_node_events,start,[]},permanent,2000,worker,[director_node_events]},
+    DirectNode = {director_node,{director_node,start,[Config]},permanent,2000,worker,[director_node]},
+    Pinger = {director_node_pinger,{director_node_pinger,start,
+				    [ConsoleNode]},permanent,2000,worker,[director_node_pinger]},
+    {ok,{{one_for_all,3,600}, [EventServer,DirectNode,Pinger]}}.
 
 %%====================================================================
 %% Internal functions

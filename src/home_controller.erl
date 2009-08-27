@@ -10,6 +10,18 @@ handle_request("index",[]) ->
     Data = {nodes,Result},
     {render,"home/index.html",[Data]};
 
+handle_request("waiting",[]) ->
+    {render,"home/waiting.html",[]};
+
+handle_request("events",[Name]) ->
+    Reply = case rpc:call(list_to_atom(Name),director_node_events,get_events,[]) of
+		{badrpc,Reason} ->
+		    [{node,Name},{msgs,[Reason]}];
+		Any ->
+		    [{node,Name},{msgs,Any}]
+	    end,
+    {render,"home/events.html",Reply};
+
 handle_request("node",[Name,Command]) ->
     case Command of
 	"start" ->
@@ -19,7 +31,8 @@ handle_request("node",[Name,Command]) ->
 	    error_logger:info_msg("Stop the node: ~s!",[Name]),
 	    rpc:call(list_to_atom(Name),director_node,stop_worker,[])
     end,
-    {redirect,"/"}.
+    
+    {redirect,"/home/waiting"}.
 
 
 %% Ignore for now
@@ -28,6 +41,7 @@ before_filter() ->
 
 
 fetch_node_status() ->
+    %% HOW TO HANDLE WHEN STATUS INFO IS NOT AVAILABLE YET...
     {Resp,_BadNodes} = rpc:multicall(nodes(),director_node,status,[],5000),
     Resp.
     

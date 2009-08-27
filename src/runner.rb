@@ -65,6 +65,43 @@ module Director
       
       @options[:node_name] ||= "worker_#{Director.generate_id}"
       
+      
+      abort "Missing command 'type' in director.yml'" unless config['type']
+      cmd = case config['type']
+            when 'ruby' then do_ruby_command(config)
+            when 'perl' then do_perl_command(config)  
+            end
+      
+        
+      #unless config["pidfile"] && config["command"] && config["phonehome"]
+      #  abort "Missing required configuration information in 'director.yml'"
+      #end
+      
+      #rake_command = "#{config['command']}['#{@options[:config_key]}']"
+              
+      #erlang_libs = %w[ebin].map do |n|
+      #  "-pz #{File.join(DIRECTOR_ROOT,n)}"
+      #end.join(" ") + " \\"
+      
+      #cmd = %Q{erl #{erlang_libs}
+      #         -sname #{@options[:node_name]} \\
+      #         -setcookie #{@options[:cookie]} \\
+      #         -appdir #{@options[:app]} \\
+      #         -pidfile #{config['pidfile']} \\
+      #         -cmdname #{rake_command} \\
+      #         -phonehome #{config['phonehome']} \\
+      #         -boot start_sasl #{daemon?} \\
+      #         -s director}.squeeze(' ')
+      begin
+        puts cmd
+        exec cmd
+      rescue 
+        puts "Error"
+        exit(1)
+      end
+    end
+    
+    def do_ruby_command(config)
       unless config["pidfile"] && config["command"] && config["phonehome"]
         abort "Missing required configuration information in 'director.yml'"
       end
@@ -75,22 +112,34 @@ module Director
         "-pz #{File.join(DIRECTOR_ROOT,n)}"
       end.join(" ") + " \\"
       
-      cmd = %Q{erl #{erlang_libs}
+      %Q{erl #{erlang_libs}
                -sname #{@options[:node_name]} \\
                -setcookie #{@options[:cookie]} \\
                -appdir #{@options[:app]} \\
                -pidfile #{config['pidfile']} \\
                -cmdname #{rake_command} \\
                -phonehome #{config['phonehome']} \\
+               -type "ruby" \\
                -boot start_sasl #{daemon?} \\
                -s director}.squeeze(' ')
-      begin
-        puts cmd
-        exec cmd
-      rescue 
-        puts "Error"
-        exit(1)
-      end
+     end
+    
+    def do_perl_command(config)
+      
+      erlang_libs = %w[ebin].map do |n|
+        "-pz #{File.join(DIRECTOR_ROOT,n)}"
+      end.join(" ") + " \\"
+      
+      %Q{erl #{erlang_libs}
+               -sname #{@options[:node_name]} \\
+               -setcookie #{@options[:cookie]} \\
+               -appdir #{config['basedir']} \\
+               -pidfile 'na' \\
+               -cmdname #{config['command']} \\
+               -phonehome #{config['phonehome']} \\
+               -type "perl" \\
+               -boot start_sasl #{daemon?} \\
+               -s director}.squeeze(' ')
     end
     
   end # End Node Runner

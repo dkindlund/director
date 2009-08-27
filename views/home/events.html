@@ -1,0 +1,19 @@
+{% extends "../base.html" %}
+{% block content %}
+  <h2>Recent Events for {{ node }}</h2>
+
+  <table width="900px">
+    <tbody>
+      <tr>
+	<td>Messages</td>
+      </tr>
+      {% for m in msgs %}
+        <tr>
+	  <td>{{ m }}</td>
+	</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <br/>
+  <a href="/home/events/{{ node }}">Refresh Messages</a>
+{% endblock %}

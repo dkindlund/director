@@ -9,6 +9,7 @@
 	<td>Script</td>
 	<td>% CPU</td>
 	<td>MEM (kilobytes)</td>
+	<td>Event Log</td>
 	<td>Status</td>
       </tr>
       {% for status,info in nodes %}
@@ -19,11 +20,13 @@
 	       <td>{{ iterator.script }}</td>
 	       <td>{{ iterator.cpu }}</td>
 	       <td>{{ iterator.mem }}</td>
+	       <td><a href="/home/events/{{ iterator.node }}">view</a></td>
 	       <td><a href="/home/node/{{ iterator.node }}/stop" style="color: green;" title="Stop">running</a></td>
 	    {% endfor %}
 	  {% else %} 
             {% for iterator in info %}
                <td>{{ iterator.node }}</td>
+	       <td>-</td>
 	       <td>-</td>
 	       <td>-</td>
 	       <td>-</td>

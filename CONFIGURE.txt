@@ -1,0 +1,44 @@
+Configuring the Ruby and Perl processes.
+
+With the addition of Perl workers, there's been a slight change to the director.yml configuration 
+file.  Each configuration (Ruby and Perl) now need a key 'type' that specifies what type of worker
+you are trying to start.  Here's a example of a configuration for each in the director.yml file:
+
+Ruby (rake) worker:
+
+collector_high:
+  pidfile: "tmp/pids/collector_high.pid"
+  command: "collector:high:start_detached"
+  phonehome: "director_console@drone"
+  type: "ruby"
+
+NOTE: the only change to the Ruby settings is the addition of the 'type' key. For Ruby workers need to set
+this to 'ruby'. Note: all lower case.
+
+Perl worker:
+
+manager1:
+  command: "test1.pl"
+  basedir: "/Users/dbryson/projects/worker_framework/src"
+  phonehome: "director_console@dave-brysons-macbook-pro"
+  type: "perl"
+
+
+There are a couple differences here in the configuration keys:
+
+ command: this should be the name of the perl script to run.
+
+ basedir: this is the root directory where the perl script lives.  This should be a full path to the 
+ script and the Perl script DOES NOT need to live under the "applications" folder. It can be 
+ anywhere on the OS that's readable/executable 
+
+ type: should be "perl"
+
+
+
+To start a worker with a Perl script it's the same as starting a Rake worker. Example:
+./bin/node -A drone -C manager1
+
+where 'drone' is the application with the config/director.yml file and 'manager1' is the configuration key
+for the script. 
+ 

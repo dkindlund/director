@@ -66,12 +66,17 @@ module Director
       @options[:node_name] ||= "worker_#{Director.generate_id}"
       
       
-      abort "Missing command 'type' in director.yml'" unless config['type']
+      abort "Missing command 'type' in director.yml" unless config['type']
+      
+      abort "Missing 'restart' configuration in director.yml" unless config['restart']
+      
       cmd = case config['type']
             when 'ruby' then do_ruby_command(config)
             when 'perl' then do_perl_command(config)  
             end
       
+      #restart_strategy = config['restart']
+      #puts "Try: #{restart_strategy['try']} within #{restart_strategy['seconds']}"
         
       #unless config["pidfile"] && config["command"] && config["phonehome"]
       #  abort "Missing required configuration information in 'director.yml'"
@@ -119,6 +124,8 @@ module Director
                -pidfile #{config['pidfile']} \\
                -cmdname #{rake_command} \\
                -phonehome #{config['phonehome']} \\
+               -tries #{config['restart']['try']} \\
+               -secs #{config['restart']['seconds']} \\
                -type "ruby" \\
                -boot start_sasl #{daemon?} \\
                -s director}.squeeze(' ')
@@ -137,6 +144,8 @@ module Director
                -pidfile 'na' \\
                -cmdname #{config['command']} \\
                -phonehome #{config['phonehome']} \\
+               -tries #{config['restart']['try']} \\
+               -secs #{config['restart']['seconds']} \\
                -type "perl" \\
                -boot start_sasl #{daemon?} \\
                -s director}.squeeze(' ')

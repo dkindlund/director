@@ -40,6 +40,9 @@ init([]) ->
     {ok,[[CmdName]]} = init:get_argument(cmdname),
     {ok,[[ConsoleNode]]} = init:get_argument(phonehome),
     {ok,[[Type]]} = init:get_argument(type),
+    {ok,[[RestartTry]]} = init:get_argument(tries),
+    {ok,[[RestartSecs]]} = init:get_argument(secs),
+
     Config = [{appdir,AppDir},{pidfile,PidFile},{cmd,CmdName},{type,Type}],
 
     error_logger:info_msg("Configuration: ~p~n",[Config]),
@@ -50,7 +53,12 @@ init([]) ->
     DirectNode = {director_node,{director_node,start,[Config]},permanent,2000,worker,[director_node]},
     Pinger = {director_node_pinger,{director_node_pinger,start,
 				    [ConsoleNode]},permanent,2000,worker,[director_node_pinger]},
-    {ok,{{one_for_all,3,600}, [EventServer,DirectNode,Pinger]}}.
+    
+
+    error_logger:info_msg("Starting the Supervisor with the following strategy: ~s tries within ~s milliseconds~n",
+			  [RestartTry,RestartSecs]),
+
+    {ok,{{one_for_all,list_to_integer(RestartTry),list_to_integer(RestartSecs)}, [EventServer,DirectNode,Pinger]}}.
 
 %%====================================================================
 %% Internal functions

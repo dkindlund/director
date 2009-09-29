@@ -1,7 +1,7 @@
-Configuring the Ruby and Perl processes.
+Configuring the Ruby, Perl, and Apache  processes.
 
-With the addition of Perl workers, there's been a slight change to the director.yml configuration 
-file.  Each configuration (Ruby and Perl) now need a key 'type' that specifies what type of worker
+With the addition of Perl and Apache  workers, there's been a slight change to the director.yml configuration 
+file.  Each configuration now requires a key 'type' that specifies what type of worker
 you are trying to start.  Here's a example of a configuration for each in the director.yml file:
 
 Ruby (rake) worker:
@@ -10,6 +10,9 @@ collector_high:
   pidfile: "tmp/pids/collector_high.pid"
   command: "collector:high:start_detached"
   phonehome: "director_console@drone"
+  restart:
+     try: 3
+     seconds: 600
   type: "ruby"
 
 NOTE: the only change to the Ruby settings is the addition of the 'type' key. For Ruby workers need to set
@@ -21,19 +24,34 @@ manager1:
   command: "test1.pl"
   basedir: "/Users/dbryson/projects/worker_framework/src"
   phonehome: "director_console@dave-brysons-macbook-pro"
+  restart:
+     try: 3
+     seconds: 600
   type: "perl"
+
+
+Apache Monitor:
+
+apache:
+  basedir: "FULL PATH TO THE DIRECTORY CONTAINING THE SHELL RESTART SCRIPT. Ex: /home/user/script"
+  command: "NAME OF THE *SHELL* SCRIPT TO USE. Ex: restart_apache.sh"
+  url: "URL OF THE WEB SERVER TO MONITOR. Ex: http://drone.mitre.org/"
+  phonehome: "director_console@drone"
+  restart:
+    try: 3
+    seconds: 600
+  type: "http"
 
 
 There are a couple differences here in the configuration keys:
 
- command: this should be the name of the perl script to run.
+ command: this should be the name of the perl or apache restart script to run.
 
- basedir: this is the root directory where the perl script lives.  This should be a full path to the 
- script and the Perl script DOES NOT need to live under the "applications" folder. It can be 
+ basedir: this is the root directory where the perl/apache script lives.  This should be a full path to the 
+ script and the Perl/Apache script DOES NOT need to live under the "applications" folder. It can be 
  anywhere on the OS that's readable/executable 
 
- type: should be "perl"
-
+ type: should be "perl" or "http" (for the apache monitor)
 
 
 To start a worker with a Perl script it's the same as starting a Rake worker. Example:

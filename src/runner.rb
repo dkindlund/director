@@ -72,31 +72,10 @@ module Director
       
       cmd = case config['type']
             when 'ruby' then do_ruby_command(config)
-            when 'perl' then do_perl_command(config)  
+            when 'perl' then do_perl_command(config)
+            when 'http' then do_http_command(config)
             end
-      
-      #restart_strategy = config['restart']
-      #puts "Try: #{restart_strategy['try']} within #{restart_strategy['seconds']}"
-        
-      #unless config["pidfile"] && config["command"] && config["phonehome"]
-      #  abort "Missing required configuration information in 'director.yml'"
-      #end
-      
-      #rake_command = "#{config['command']}['#{@options[:config_key]}']"
-              
-      #erlang_libs = %w[ebin].map do |n|
-      #  "-pz #{File.join(DIRECTOR_ROOT,n)}"
-      #end.join(" ") + " \\"
-      
-      #cmd = %Q{erl #{erlang_libs}
-      #         -sname #{@options[:node_name]} \\
-      #         -setcookie #{@options[:cookie]} \\
-      #         -appdir #{@options[:app]} \\
-      #         -pidfile #{config['pidfile']} \\
-      #         -cmdname #{rake_command} \\
-      #         -phonehome #{config['phonehome']} \\
-      #         -boot start_sasl #{daemon?} \\
-      #         -s director}.squeeze(' ')
+          
       begin
         puts cmd
         exec cmd
@@ -104,6 +83,33 @@ module Director
         puts "Error"
         exit(1)
       end
+    end
+    
+    def do_http_command(config)
+      unless config["url"] && config["command"] && config["phonehome"] && config["basedir"]
+        abort "Missing required configuration information in 'director.yml' for an HTTP process. See director.yml"
+      end
+      
+      erlang_libs = %w[ebin].map do |n|
+        "-pz #{File.join(DIRECTOR_ROOT,n)}"
+      end.join(" ") + " \\"
+      
+      # NEED URL
+      %Q{erl #{erlang_libs}
+               -sname #{@options[:node_name]} \\
+               -setcookie #{@options[:cookie]} \\
+               -appdir #{config['basedir']} \\
+               -pidfile 'na' \\
+               -cmdname #{config['command']} \\
+               -phonehome #{config['phonehome']} \\
+               -tries #{config['restart']['try']} \\
+               -secs #{config['restart']['seconds']} \\
+               -type "http" \\
+               -url #{config['url']} \\
+               -boot start_sasl #{daemon?} \\
+               -s director}.squeeze(' ')
+      
+      
     end
     
     def do_ruby_command(config)
@@ -132,11 +138,15 @@ module Director
      end
     
     def do_perl_command(config)
+      unless config["basedir"] 
+        abort "Missing basedir configuration information in 'director.yml' required for Perl process"
+      end
       
       erlang_libs = %w[ebin].map do |n|
         "-pz #{File.join(DIRECTOR_ROOT,n)}"
       end.join(" ") + " \\"
-      
+
+      # NOTE: replacing Appdir with the basedir value for the supv.
       %Q{erl #{erlang_libs}
                -sname #{@options[:node_name]} \\
                -setcookie #{@options[:cookie]} \\

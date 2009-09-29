@@ -36,10 +36,8 @@ upgrade() ->
 %% @doc supervisor callback.
 init([]) ->
     Ip = case os:getenv("MOCHIWEB_IP") of false -> "0.0.0.0"; Any -> Any end,   
-    WebConfig = [
-		 {ip, Ip},
-                 {port, 8000}
-                ],
+    
+    WebConfig = [ {ip, Ip},{port, 8000}],
 
     %% Sets up the BeepBeep environment. Removing any of the below
     %% will cause something to break.

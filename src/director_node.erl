@@ -113,9 +113,12 @@ get_service_type(State) ->
 	"perl" ->
 	    error_logger:info_msg("Starting Perl process~n"),
 	    director_perl_process;
-	_ ->
-	    error_logger:info_msg("Starting Perl process~n"),
-	    director_ruby_process
+	"ruby" ->
+	    error_logger:info_msg("Starting Ruby process~n"),
+	    director_ruby_process;
+	"http" ->
+	    error_logger:info_msg("Starting Apache Monitor process~n"),
+	    director_apache_process
     end.
 
 start_services(State) ->

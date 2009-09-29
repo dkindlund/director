@@ -43,7 +43,14 @@ init([]) ->
     {ok,[[RestartTry]]} = init:get_argument(tries),
     {ok,[[RestartSecs]]} = init:get_argument(secs),
 
-    Config = [{appdir,AppDir},{pidfile,PidFile},{cmd,CmdName},{type,Type}],
+    %% Configuration passed to the node for the service
+    Config = case Type of
+		 "http" ->
+		     {ok,[[Url]]} = init:get_argument(url),
+		     [{appdir,AppDir},{pidfile,PidFile},{cmd,CmdName},{type,Type},{url,Url}];
+		 _ ->
+		     [{appdir,AppDir},{pidfile,PidFile},{cmd,CmdName},{type,Type}]
+	     end,
 
     error_logger:info_msg("Configuration: ~p~n",[Config]),
 

@@ -48,6 +48,8 @@ loop(Req) ->
 	    Req:respond({200,
 			 [{"Content-Type","text/plain"}|[get_cookie(Env)]],
 			 Content});
+	{json,Status,Content} ->
+	    Req:respond({Status,[{"Content-Type","application/json"}],Content});
 	{redirect,Url} ->
 	    Req:respond({302, 
                          [{"Location", Url}, 

@@ -1,0 +1,38 @@
+h2. Honeyclient Director 
+
+The Honeyclient Director provides a network of Erlang nodes to control and monitor daemonized tasks usually scripted in another language.
+
+h3. Requirements:
+    
+  * make
+  * Erlang 12b-5
+  * Ruby, Rake
+  * Addtionally any dependencies needed by the rake task to run
+
+h3. Install:
+ 
+Once Erlang is configured, copy the drone application to the "applications" directory.
+In drone/config, set the configuration parameters needed in "director.yml". The following configuration parameters are required:
+ 
+ * pidfile: a unique name for the pidfile that hold the pid of the rake task running.
+ * command: the terminal command to run the task. For example 'collector:start_as_daemon'
+ * phonehome: the erlang network name of the console node in the form: name@hostname. Where hostname corresponds to the result
+   of the unix command "hostname -s"
+
+To start the console application:
+  Within the "director" directory run: 
+  <pre>
+  <code>
+   ./bin/console
+  </code>
+  </pre>
+
+To run a worker node:
+  Within the "director" directory run: 
+  <pre>
+   <code>
+    ./bin/node -A drone -C sample
+   </code>
+  </pre>
+
+where 'sample' is the key of the desired configuration parameters in 'director.yml' file. 
